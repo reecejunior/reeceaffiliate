@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "farm-livestock-app",
+    "slug": "farm-livestock-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2a9d8f"
+        }
+      ]
+    ],
+    "extra": {
+      "firebase": {
+        "apiKey": "YOUR_API_KEY",
+        "authDomain": "YOUR_AUTH_DOMAIN",
+        "projectId": "YOUR_PROJECT_ID",
+        "storageBucket": "YOUR_STORAGE_BUCKET",
+        "messagingSenderId": "YOUR_MESSAGING_SENDER_ID",
+        "appId": "YOUR_APP_ID",
+        "measurementId": "YOUR_MEASUREMENT_ID"
+      }
+    }
+  }
+}
