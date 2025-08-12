@@ -33,7 +33,10 @@
     "react-native-svg": "^15.12.1",
     "victory-native": "^41.19.1",
     "xlsx": "^0.18.5",
-    "zod": "^4.0.17"
+    "zod": "^4.0.17",
+    "react-dom": "19.0.0",
+    "react-native-web": "^0.20.0",
+    "@expo/metro-runtime": "~5.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
