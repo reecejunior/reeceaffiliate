@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Linking } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { Platform } from 'react-native';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { useQuery } from '@tanstack/react-query';
 import { apiRentals, BackendRental } from '../api/client';
@@ -16,14 +16,28 @@ export default function RentalsScreen() {
 
   const region = useMemo(() => ({ latitude: center.latitude, longitude: center.longitude, latitudeDelta: 0.03, longitudeDelta: 0.03 }), [center]);
 
+  let MapViewComponent: any = null;
+  let MarkerComponent: any = null;
+  if (Platform.OS !== 'web') {
+    const maps = require('react-native-maps');
+    MapViewComponent = maps.default;
+    MarkerComponent = maps.Marker;
+  }
+
   return (
     <View className="flex-1 bg-white">
       <View className="w-full h-64">
-        <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
-          {(rentals ?? []).map((r) => (
-            <Marker key={r.id} coordinate={{ latitude: r.lat, longitude: r.lon }} title={`${r.provider} (${r.type})`} description={`$${r.price}/${r.unit}`} />
-          ))}
-        </MapView>
+        {Platform.OS === 'web' ? (
+          <View className="flex-1 items-center justify-center bg-slate-200">
+            <Text className="text-slate-700">Map not supported on web build</Text>
+          </View>
+        ) : (
+          <MapViewComponent style={{ flex: 1 }} initialRegion={region} showsUserLocation>
+            {(rentals ?? []).map((r) => (
+              <MarkerComponent key={r.id} coordinate={{ latitude: r.lat, longitude: r.lon }} title={`${r.provider} (${r.type})`} description={`$${r.price}/${r.unit}`} />
+            ))}
+          </MapViewComponent>
+        )}
       </View>
       <FlatList
         className="flex-1 p-4"

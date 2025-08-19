@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { Platform } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { apiNearbyPlaces, BackendPlace } from '../api/client';
 import { useUserLocation } from '../hooks/useUserLocation';
@@ -37,14 +37,29 @@ export default function DiscoverScreen() {
     return { latitude: center.latitude, longitude: center.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 };
   }, [userLocation]);
 
+  let MapViewComponent: any = null;
+  let MarkerComponent: any = null;
+  if (Platform.OS !== 'web') {
+    // Lazy require to avoid bundling/react-native-maps on web
+    const maps = require('react-native-maps');
+    MapViewComponent = maps.default;
+    MarkerComponent = maps.Marker;
+  }
+
   return (
     <View className="flex-1 bg-white">
       <View className="w-full h-64">
-        <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
-          {sortedPlaces.map((p) => (
-            <Marker key={p.id} coordinate={{ latitude: p.lat, longitude: p.lon }} title={p.name} description={p.category} onPress={() => navigation.navigate('PlaceDetails', { id: p.id })} />
-          ))}
-        </MapView>
+        {Platform.OS === 'web' ? (
+          <View className="flex-1 items-center justify-center bg-slate-200">
+            <Text className="text-slate-700">Map not supported on web build</Text>
+          </View>
+        ) : (
+          <MapViewComponent style={{ flex: 1 }} initialRegion={region} showsUserLocation>
+            {sortedPlaces.map((p) => (
+              <MarkerComponent key={p.id} coordinate={{ latitude: p.lat, longitude: p.lon }} title={p.name} description={p.category} onPress={() => navigation.navigate('PlaceDetails', { id: p.id })} />
+            ))}
+          </MapViewComponent>
+        )}
       </View>
       <View className="flex-1 p-4">
         <Text className="text-xl font-semibold mb-2">Nearby Places</Text>

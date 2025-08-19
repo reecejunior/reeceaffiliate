@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
-import MapView, { Polygon } from 'react-native-maps';
+import { Platform } from 'react-native';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { useQuery } from '@tanstack/react-query';
 import { IncidentType, TimeRange } from '../api/mockApi';
@@ -33,26 +33,38 @@ export default function SafetyMapScreen() {
     setIncidentTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
   };
 
+  let MapViewComponent: any = null;
+  let PolygonComponent: any = null;
+  if (Platform.OS !== 'web') {
+    const maps = require('react-native-maps');
+    MapViewComponent = maps.default;
+    PolygonComponent = maps.Polygon;
+  }
+
   return (
     <View className="flex-1 bg-white">
       <View className="w-full h-80">
-        <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
-          {(tiles ?? []).map((t) => {
-            // Derive a polygon approximation from H3 center (fallback) since we don't have boundary coords here.
-            // In production, the server could return polygon vertices for each cell.
-            const verts = hexagonForCenter({ latitude: center.latitude, longitude: center.longitude }, 0.25);
-            return (
-              <Polygon
-                key={t.id}
-                coordinates={verts}
-                strokeColor={colorForScore(t.score)}
-                fillColor={colorForScore(t.score)}
-                tappable
-                onPress={() => setSelectedTile({ id: t.id, center, safetyScore: t.score, topIncidents: [] } as any)}
-              />
-            );
-          })}
-        </MapView>
+        {Platform.OS === 'web' ? (
+          <View className="flex-1 items-center justify-center bg-slate-200">
+            <Text className="text-slate-700">Map not supported on web build</Text>
+          </View>
+        ) : (
+          <MapViewComponent style={{ flex: 1 }} initialRegion={region} showsUserLocation>
+            {(tiles ?? []).map((t) => {
+              const verts = hexagonForCenter({ latitude: center.latitude, longitude: center.longitude }, 0.25);
+              return (
+                <PolygonComponent
+                  key={t.id}
+                  coordinates={verts}
+                  strokeColor={colorForScore(t.score)}
+                  fillColor={colorForScore(t.score)}
+                  tappable
+                  onPress={() => setSelectedTile({ id: t.id, safetyScore: t.score, topIncidents: [] })}
+                />
+              );
+            })}
+          </MapViewComponent>
+        )}
       </View>
 
       <View className="p-4">
