@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import DiscoverScreen from '../screens/DiscoverScreen';
-import SafetyScreen from '../screens/SafetyScreen';
+import SafetyMapScreen from '../screens/SafetyMapScreen';
 import TranslateScreen from '../screens/TranslateScreen';
 import CultureScreen from '../screens/CultureScreen';
 import RentalsScreen from '../screens/RentalsScreen';
@@ -39,7 +39,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Discover" component={DiscoverScreen} />
-      <Tab.Screen name="Safety" component={SafetyScreen} />
+      <Tab.Screen name="Safety" component={SafetyMapScreen} />
       <Tab.Screen name="Translate" component={TranslateScreen} />
       <Tab.Screen name="Culture" component={CultureScreen} />
       <Tab.Screen name="Rentals" component={RentalsScreen} />
