@@ -3,14 +3,14 @@ import { View, Text, FlatList, TouchableOpacity, Linking } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { useQuery } from '@tanstack/react-query';
-import { fetchRentalsNearby, RentalOption } from '../api/mockApi';
+import { apiRentals, BackendRental } from '../api/client';
 
 export default function RentalsScreen() {
   const userLocation = useUserLocation();
   const center = userLocation ?? { latitude: 37.7749, longitude: -122.4194 };
-  const { data: rentals } = useQuery<RentalOption[]>({
+  const { data: rentals } = useQuery<BackendRental[]>({
     queryKey: ['rentals', center.latitude, center.longitude],
-    queryFn: () => fetchRentalsNearby(center),
+    queryFn: () => apiRentals(center.latitude, center.longitude),
     enabled: !!center,
   });
 
@@ -21,7 +21,7 @@ export default function RentalsScreen() {
       <View className="w-full h-64">
         <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
           {(rentals ?? []).map((r) => (
-            <Marker key={r.id} coordinate={{ latitude: r.latitude, longitude: r.longitude }} title={`${r.provider} (${r.type})`} description={`$${r.price}/${r.unit}`} />
+            <Marker key={r.id} coordinate={{ latitude: r.lat, longitude: r.lon }} title={`${r.provider} (${r.type})`} description={`$${r.price}/${r.unit}`} />
           ))}
         </MapView>
       </View>
@@ -36,7 +36,7 @@ export default function RentalsScreen() {
               <Text className="text-base font-medium">{item.provider} • {item.type.toUpperCase()}</Text>
               <Text className="text-slate-500">${item.price}/{item.unit}</Text>
             </View>
-            <TouchableOpacity className="px-3 py-2 bg-indigo-600 rounded" onPress={() => Linking.openURL(item.bookingUrl)}>
+            <TouchableOpacity className="px-3 py-2 bg-indigo-600 rounded" onPress={() => Linking.openURL(item.url)}>
               <Text className="text-white">Book</Text>
             </TouchableOpacity>
           </View>

@@ -3,20 +3,21 @@ import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { useQuery } from '@tanstack/react-query';
-import { fetchSafetyTiles, IncidentType, SafetyTile, TimeRange } from '../api/mockApi';
+import { IncidentType, TimeRange } from '../api/mockApi';
+import { apiSafetyTiles, BackendTile } from '../api/client';
 import { hexagonForCenter } from '../utils/geo';
 
 export default function SafetyMapScreen() {
   const userLocation = useUserLocation();
   const [incidentTypes, setIncidentTypes] = useState<IncidentType[]>(['crime', 'robbery', 'accidents']);
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
-  const [selectedTile, setSelectedTile] = useState<SafetyTile | null>(null);
+  const [selectedTile, setSelectedTile] = useState<null | { id: string; safetyScore: number; topIncidents: { type: IncidentType; count: number }[] }>(null);
 
   const center = userLocation ?? { latitude: 37.7749, longitude: -122.4194 };
 
-  const { data: tiles } = useQuery({
+  const { data: tiles } = useQuery<BackendTile[]>({
     queryKey: ['safety', center.latitude, center.longitude, incidentTypes.sort().join(','), timeRange],
-    queryFn: () => fetchSafetyTiles({ city: 'CurrentCity', center, incidentTypes, timeRange }),
+    queryFn: () => apiSafetyTiles({}),
     enabled: !!center,
   });
 
@@ -37,15 +38,17 @@ export default function SafetyMapScreen() {
       <View className="w-full h-80">
         <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
           {(tiles ?? []).map((t) => {
-            const verts = hexagonForCenter(t.center, 0.25);
+            // Derive a polygon approximation from H3 center (fallback) since we don't have boundary coords here.
+            // In production, the server could return polygon vertices for each cell.
+            const verts = hexagonForCenter({ latitude: center.latitude, longitude: center.longitude }, 0.25);
             return (
               <Polygon
                 key={t.id}
                 coordinates={verts}
-                strokeColor={colorForScore(t.safetyScore)}
-                fillColor={colorForScore(t.safetyScore)}
+                strokeColor={colorForScore(t.score)}
+                fillColor={colorForScore(t.score)}
                 tappable
-                onPress={() => setSelectedTile(t)}
+                onPress={() => setSelectedTile({ id: t.id, center, safetyScore: t.score, topIncidents: [] } as any)}
               />
             );
           })}

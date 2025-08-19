@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Linking, TouchableOpacity } from 'react-native'
 import { RouteProp, useRoute } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/types';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPlaceDetails, fetchSafetyTiles } from '../api/mockApi';
+import { apiPlace } from '../api/client';
 import { Ionicons } from '@expo/vector-icons';
 
 type Route = RouteProp<RootStackParamList, 'PlaceDetails'>;
@@ -12,21 +12,17 @@ export default function PlaceDetailsScreen() {
   const route = useRoute<Route>();
   const id = route.params.id;
 
-  const { data: place } = useQuery({ queryKey: ['place', id], queryFn: () => fetchPlaceDetails(id) });
+  const { data: place } = useQuery({ queryKey: ['place', id], queryFn: () => apiPlace(id) });
 
-  const safetyScore = place?.safetyScore ?? 50;
+  const safetyScore = 50;
   const safetyColor = useMemo(() => (safetyScore >= 75 ? 'bg-green-100 text-green-700' : safetyScore >= 50 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'), [safetyScore]);
 
   const handleDirections = () => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place?.name ?? '')}`;
     Linking.openURL(url);
   };
-  const handleCall = () => {
-    if (place?.phone) Linking.openURL(`tel:${place.phone}`);
-  };
-  const handleBook = () => {
-    if (place?.website) Linking.openURL(place.website);
-  };
+  const handleCall = () => {};
+  const handleBook = () => {};
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -45,10 +41,7 @@ export default function PlaceDetailsScreen() {
         </View>
 
         <View className="mt-4 space-y-1">
-          {!!place?.hours && <Text className="text-slate-700">Hours: {place.hours}</Text>}
-          {!!place?.address && <Text className="text-slate-700">Address: {place.address}</Text>}
-          {!!place?.phone && <Text className="text-slate-700">Phone: {place.phone}</Text>}
-          {!!place?.website && <Text className="text-sky-600" onPress={() => place?.website && Linking.openURL(place.website)}>Website</Text>}
+          <Text className="text-slate-700">Coordinates: {place?.lat.toFixed(4)}, {place?.lon.toFixed(4)}</Text>
         </View>
 
         <View className="mt-6 flex-row gap-3">

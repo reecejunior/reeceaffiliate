@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useQuery } from '@tanstack/react-query';
-import { fetchNearbyPlaces, NearbyPlace } from '../api/mockApi';
+import { apiNearbyPlaces, BackendPlace } from '../api/client';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { formatDistanceKm, haversineDistanceKm } from '../utils/geo';
 import { useNavigation } from '@react-navigation/native';
@@ -15,20 +15,20 @@ export default function DiscoverScreen() {
   const navigation = useNavigation<Nav>();
   const userLocation = useUserLocation();
 
-  const { data: places } = useQuery<NearbyPlace[]>({
+  const { data: places } = useQuery<BackendPlace[]>({
     queryKey: ['nearby', userLocation?.latitude, userLocation?.longitude],
     queryFn: async () => {
       const coords = userLocation ?? { latitude: 37.7749, longitude: -122.4194 };
-      return fetchNearbyPlaces(coords);
+      return apiNearbyPlaces(coords.latitude, coords.longitude);
     },
     enabled: !!userLocation,
   });
 
   const sortedPlaces = useMemo(() => {
-    if (!places) return [] as (NearbyPlace & { distanceKm: number })[];
-    const origin = userLocation ?? { latitude: places[0].latitude, longitude: places[0].longitude };
+    if (!places) return [] as (BackendPlace & { distanceKm: number })[];
+    const origin = userLocation ?? { latitude: places[0].lat, longitude: places[0].lon };
     return places
-      .map((p) => ({ ...p, distanceKm: haversineDistanceKm(origin, { latitude: p.latitude, longitude: p.longitude }) }))
+      .map((p) => ({ ...p, distanceKm: haversineDistanceKm(origin, { latitude: p.lat, longitude: p.lon }) }))
       .sort((a, b) => a.distanceKm - b.distanceKm);
   }, [places, userLocation]);
 
@@ -42,7 +42,7 @@ export default function DiscoverScreen() {
       <View className="w-full h-64">
         <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation>
           {sortedPlaces.map((p) => (
-            <Marker key={p.id} coordinate={{ latitude: p.latitude, longitude: p.longitude }} title={p.name} description={p.category} onPress={() => navigation.navigate('PlaceDetails', { id: p.id })} />
+            <Marker key={p.id} coordinate={{ latitude: p.lat, longitude: p.lon }} title={p.name} description={p.category} onPress={() => navigation.navigate('PlaceDetails', { id: p.id })} />
           ))}
         </MapView>
       </View>
@@ -55,7 +55,7 @@ export default function DiscoverScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity className="py-3" onPress={() => navigation.navigate('PlaceDetails', { id: item.id })}>
               <Text className="text-base font-medium">{item.name}</Text>
-              <Text className="text-slate-500">{item.category} • {item.rating.toFixed(1)} ★ • {formatDistanceKm(item.distanceKm)}</Text>
+              <Text className="text-slate-500">{item.category} • {(item.rating ?? 0).toFixed(1)} ★ • {formatDistanceKm(item.distanceKm)}</Text>
             </TouchableOpacity>
           )}
         />

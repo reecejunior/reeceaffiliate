@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import * as SQLite from 'expo-sqlite/legacy';
+import * as SQLite from 'expo-sqlite';
 import { useQuery } from '@tanstack/react-query';
 
 type CityPack = { id: string; name: string; size_mb: number };
@@ -12,13 +12,8 @@ async function fetchCityPacks(): Promise<CityPack[]> {
   return res.json();
 }
 
-const db = SQLite.openDatabase('offline.db');
-function initDb() {
-  db.transaction((tx) => {
-    tx.executeSql('CREATE TABLE IF NOT EXISTS packs (id TEXT PRIMARY KEY, name TEXT, size_mb INTEGER, path TEXT);');
-  });
-}
-initDb();
+const db = SQLite.openDatabaseSync('offline.db');
+db.execSync('CREATE TABLE IF NOT EXISTS packs (id TEXT PRIMARY KEY, name TEXT, size_mb INTEGER, path TEXT);');
 
 export default function DownloadsScreen() {
   const { data } = useQuery<CityPack[]>({ queryKey: ['city_packs'], queryFn: fetchCityPacks });
@@ -28,9 +23,7 @@ export default function DownloadsScreen() {
     const uri = `${FileSystem.documentDirectory}${pack.id}.json`;
     setProgressById((p) => ({ ...p, [pack.id]: 0 }));
     await FileSystem.downloadAsync('https://example.com/offline-pack.json', uri).then(() => {
-      db.transaction((tx) => {
-        tx.executeSql('INSERT OR REPLACE INTO packs (id, name, size_mb, path) VALUES (?, ?, ?, ?);', [pack.id, pack.name, pack.size_mb, uri]);
-      });
+      db.runSync('INSERT OR REPLACE INTO packs (id, name, size_mb, path) VALUES (?, ?, ?, ?);', [pack.id, pack.name, pack.size_mb, uri]);
       setProgressById((p) => ({ ...p, [pack.id]: 1 }));
     });
   };
