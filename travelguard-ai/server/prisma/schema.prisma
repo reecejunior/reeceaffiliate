@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model City {
+  id        String   @id @default(cuid())
+  name      String
+  country   String
+  lat       Float
+  lon       Float
+  places    Place[]
+  culture   Culture?
+  tiles     TileH3[]
+  rentals   Rental[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Place {
+  id        String   @id @default(cuid())
+  name      String
+  category  String
+  rating    Float?
+  lat       Float
+  lon       Float
+  cityId    String?
+  city      City?    @relation(fields: [cityId], references: [id])
+  incidents Incident[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Incident {
+  id        String   @id @default(cuid())
+  type      String
+  severity  Int
+  timestamp DateTime
+  lat       Float
+  lon       Float
+  h3        String?
+  placeId   String?
+  place     Place?   @relation(fields: [placeId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model TileH3 {
+  id         String   @id @default(cuid())
+  h3         String   @unique
+  cityId     String?
+  city       City?    @relation(fields: [cityId], references: [id])
+  score      Int
+  scoreFloat Float
+  counts     Json
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+}
+
+model Culture {
+  id        String  @id @default(cuid())
+  cityId    String  @unique
+  city      City    @relation(fields: [cityId], references: [id])
+  greetings Json
+  tipping   Json
+  etiquette Json
+  taboos    Json
+  contacts  Json
+}
+
+model Rental {
+  id        String   @id @default(cuid())
+  provider  String
+  type      String
+  price     Float
+  unit      String
+  lat       Float
+  lon       Float
+  cityId    String?
+  city      City?    @relation(fields: [cityId], references: [id])
+  url       String
+  createdAt DateTime @default(now())
+}
+
