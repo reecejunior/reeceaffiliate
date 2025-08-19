@@ -1,4 +1,6 @@
-export const API_BASE = process.env.EXPO_PUBLIC_API_BASE || 'http://localhost:4000';
+import Constants from 'expo-constants';
+const apiBaseFromConstants = (Constants?.expoConfig as any)?.extra?.apiBase;
+export const API_BASE = apiBaseFromConstants || process.env.EXPO_PUBLIC_API_BASE || 'http://localhost:3000';
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`);
