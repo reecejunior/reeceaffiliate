@@ -144,3 +144,78 @@ export async function fetchSafetyTiles(params: {
   return tiles;
 }
 
+// --- OCR, Language, Translation (Mocked) ---
+export async function ocrImage(base64: string): Promise<{ text: string }>{
+  await delay(200);
+  return { text: 'Bienvenidos a la ciudad. Horario: 9:00 - 18:00.' };
+}
+
+export async function detectLanguage(text: string): Promise<string> {
+  await delay(80);
+  const lower = text.toLowerCase();
+  if (/[áéíóúñ¿¡]/.test(lower) || lower.includes('bienvenidos')) return 'es';
+  if (/[àâçéèêëîïôùûüÿœ]/.test(lower) || lower.includes('bonjour')) return 'fr';
+  return 'en';
+}
+
+export async function translateText(text: string, to: string): Promise<string> {
+  await delay(150);
+  return `(${to}) ${text}`;
+}
+
+// --- Culture ---
+export type CultureData = {
+  cityId: string;
+  greetings: string[];
+  tipping: string[];
+  etiquette: string[];
+  taboos: string[];
+  emergencyContacts: { label: string; value: string }[];
+  quickTips: string[];
+};
+
+export async function fetchCulture(cityId: string): Promise<CultureData> {
+  await delay(220);
+  return {
+    cityId,
+    greetings: ['Handshake, eye contact', 'Use formal titles initially'],
+    tipping: ['Restaurants: 10-15%', 'Taxis: round up', 'Hotels: small tips appreciated'],
+    etiquette: ['Be punctual', 'Dress modestly in religious areas'],
+    taboos: ['Avoid loud conversations on public transport'],
+    emergencyContacts: [
+      { label: 'Emergency', value: '112' },
+      { label: 'Police', value: '110' },
+      { label: 'Ambulance', value: '118' },
+    ],
+    quickTips: ['Carry small change', 'Learn basic phrases', 'Keep copies of documents'],
+  };
+}
+
+// --- Rentals ---
+export type RentalOption = {
+  id: string;
+  provider: string;
+  type: 'car' | 'scooter' | 'bike';
+  price: number;
+  unit: 'day' | 'hour';
+  latitude: number;
+  longitude: number;
+  bookingUrl: string;
+};
+
+export async function fetchRentalsNearby(params: { latitude: number; longitude: number }): Promise<RentalOption[]> {
+  await delay(250);
+  const { latitude, longitude } = params;
+  return [
+    { id: 'r1', provider: 'CityCar', type: 'car', price: 49, unit: 'day', latitude: latitude + 0.002, longitude: longitude + 0.001, bookingUrl: 'https://booking.example.com/citycar' },
+    { id: 'r2', provider: 'ZipScoot', type: 'scooter', price: 8, unit: 'hour', latitude: latitude - 0.0015, longitude: longitude + 0.0022, bookingUrl: 'https://booking.example.com/zipscoot' },
+    { id: 'r3', provider: 'BikeNow', type: 'bike', price: 5, unit: 'hour', latitude: latitude + 0.0025, longitude: longitude - 0.001, bookingUrl: 'https://booking.example.com/bikenow' },
+  ];
+}
+
+// --- Speech/Transcription (Mock) ---
+export async function transcribeAudio(uri: string): Promise<{ text: string; language: string }>{
+  await delay(300);
+  return { text: '¿Dónde está la estación?', language: 'es' };
+}
+
